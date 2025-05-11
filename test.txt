@@ -1,0 +1,158 @@
+all graph algorithms to implement
+
+BFS
+
+
+
+in
+
+
+
+
+
+
+#used in shortest path algorithms to find the shortest path between 1 node and all other nodes starting from that node for unweighted graphs
+
+# O(|E| + |V|)
+
+def BFS(G,s):
+    traverse = []
+    visited = {}
+    q = queue()
+    q.push(s)
+    visited[s] = true
+    while not q.empty():
+        u = q.top()
+        q.exctract()
+        for v in u.edges:
+            if not visited[v]:
+                visited[v] = true
+                q.push(v)
+        traverse.append(u)
+    return traverse
+
+#using recursion is the best way to implement DFS and the reason is the backtracking proprety 
+
+DFS
+
+O(|E| + |V|)
+
+def DFS(G):
+    is_pending = {}
+    visited = {}
+    entry_time = {}
+    exit_time = {}
+    time = 0
+    stack = []
+    def DFSearch(G,u):
+        time +=1
+        entry_time[u] = time
+        is_pending[u] = true
+        for v in u.edges:
+            if not is_pending[v]:
+                Detect_Edges(G,(u,v))
+                DFSearch(G,v)
+            else if not visited[v] and G.directed:
+                Detect_Edges(G,(u,v))
+        time += 1
+        exit_time[u] = time
+        visited[u] = true
+        stack.push(u)
+    for u in G.v:
+        if visited[u]:
+            DFSearch(G,u)
+    return (entry_time,exit_time)
+
+O(|E| + |V|)
+def detect_cycles(G):
+    return DFS(G,Detect_Edges(back_edges))
+
+# O (|E| + |V|log|V| )
+def Topolgical_sorting(G,s):
+    (entry_time,exit_time) = DFS(G)
+    exit_time.sort(-1)
+    print(exit_time)
+
+
+# SCC (Strongly connected components) Kosaraju's algorithm
+# this algorithm is really easy traverse DFS and stack the traversed element transpose the graph and DFS from the top of the stack till empty 
+
+# O(|E| + |V|)
+
+def SCC(G):
+    stack = DFS(G) # stack of DFS
+    G = G.T 
+    SCC = []
+    while not stack.empty():
+        u = stack.top()
+        if u not visited:
+            SCC.append(DFSearch(G,u)) # just search the SCC not all the graph  
+    return SCC
+
+# graph traversal
+
+Dijikstra algorithm
+
+O( (|V| + |E|)log|V| ) with regular heap finbonacci heap is more 
+O( |V|log|V| + |E| )
+
+def Dijikstra(G,s):
+    distance = {infinty}
+    pq = priorety_queue(distance) # this should be custom so you can search in O(1) and delelte any node in O(logn) just like the one we implemented
+    distance[s] = 0
+    while not pq.empty():
+        u = pq.exctract_min() # O(log|V|)
+        for (u,v,w) in u.edges:
+            if distance[v] > distance[u] + w:
+                distance[v] = distance[u] + w
+                pq[v] = distance[u] + w # O(log|V|) this could take O(1) but you would use a finbonacci heap
+    return distance
+
+O(|E||V|)
+
+#negative cycle detection and shortest path while allowing negative edges
+
+def Bellman_Ford(G,s):
+    distance = {infinty}
+    distance[s] = 0
+    for _ in range(|V| - 1):
+        for (u,v,w) in G.edges:
+            if distance[v] > distance[u] + w:
+                distance[v] = distance[u] + w
+    # check negative cycles
+
+    for (u,v,w) in G.edges:
+            if distance[v] > distance[u] + w:
+                return NEGATIVE_CYCLE        
+    return distance
+
+Floyd Warshall 
+
+O(|V|^3)
+
+# returns all shortest path from all nodes really easy algorithm yet so smart and efficent
+
+def Floyd_Warshall(G):
+    A = G.weighted_adjacency_matrix
+    for k in range(A.size()):
+        Ak = A
+        for i in range(A.size()):
+            for j in range(A.size()):
+                A[i][j] = min(Ak[i][j], Ak[i][k]+Ak[k][j])
+    return a
+
+# Kruskal's algorithm 
+
+O(|E|log|V|)
+
+def Kruskal(G):
+    T = []
+    for v in G.v:
+        make_set(v)
+    pq = priorety_queue(G.E)
+    while T.size() < |V| - 1:
+        u = pq.exctract_min();
+        if not (Find_set(u.src) == Find_set(u.dest)):
+            T.append(u)
+            Merge_set(u.src,u.dest)
+    return Topolgical_sorting
