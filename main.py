@@ -1,6 +1,7 @@
 '''Author: CHICH'''
 import queue
 import heapq
+import random
 # this function allows us to write clearner code and to manage min and max structures
 
 def less_important(item1, item2,is_max ):
@@ -157,14 +158,17 @@ class Priority_queue:
     
 
 class Node:
-    def __init__(self, val=0,name="a"):
+    def __init__(self, name="a",val=0):
         self.val = val
         self.name = name
 
     def __eq__(self, other):
         if isinstance(other, Node):
-            return self.val == other.val
+            return self.val == other.val and self.name == other.name
         return False
+
+    def __hash__(self):
+        return hash((self.val, self.name))
 
     def __ge__(self, other):
         if isinstance(other, Node):
@@ -220,11 +224,36 @@ class edges:
     
 
 class Graph:
-    def __init__(self,n=10):
+    def __init__(self,n=10,min_weight=0, max_weight=10):
         self.edges = {}
         self.labels = [str(i) for i in range(n)]
-    
+        self.min_weight = min_weight
+        self.max_weight = max_weight
+        self.vertcies = {}
+
+    def generate_random_graph(self, n_node=0):
+        def generate_label(index):
+            label = ""
+            while index >= 0:
+                label = chr(index % 26 + ord('a')) + label
+                index = index // 26 - 1
+            return label
+
+        self.labels = [generate_label(i) for i in range(n_node)]
+        for vertex in self.labels:
+            self.vertcies[vertex] = []
+        for i in range(n_node):
+            for j in range(random.randint(1, n_node - 1)):
+                from_node = Node(self.labels[i])
+                to_node = Node(random.choice([label for label in self.labels if label != from_node.name]))
+                weight = random.randint(self.min_weight, self.max_weight)
+                triplet = (from_node, to_node, weight)
+                if triplet not in self.edges.values():
+                    self.edges[len(self.edges)] = triplet
+                    self.vertcies[from_node.name].append((to_node.name,weight))
+
     # setting the labels in other words the tags for each node also known as their names 
+    
     def set_labels(self,lables):
         self.labels = lables
 
@@ -234,3 +263,6 @@ class Graph:
         return True
     
 
+G = Graph()
+G.generate_random_graph(3)
+print(G.vertcies,G.labels)
