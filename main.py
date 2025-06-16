@@ -12,6 +12,22 @@ def less_important(item1, item2,is_max ):
 
 # to avoid repetion we are not going to reimplement the class queue but just rename their components aka the names of the function that do 
 # not align with the classical names
+class response:
+    def __init__(self,type):
+        self.type = type
+class BFS_response(response):
+    def __init__(self, visited=None, parents=None, ordered_visits=None):
+        super().__init__("BFS_MAP")
+        self.visited = visited if visited is not None else {}
+        self.parents = parents if parents is not None else []
+        self.ordered_visits = ordered_visits if ordered_visits is not None else []
+    
+    def __str__(self):
+        result = f"BFS Response: BFS_MAP \n"
+        result += f"Visited nodes: {self.visited}\n"
+        result += f"Visit order: {self.ordered_visits}\n"
+        result += f"Parent relationships: {self.parents}"
+        return result
 
 class Queue(queue.Queue):
     def enqueue(self, item):
@@ -25,6 +41,13 @@ class Queue(queue.Queue):
 
     def size(self):
         return self.qsize()
+    
+    def top(self):
+        if not self.empty():
+            item = self.get()
+            self.put(item)
+            return item
+        return None
 
 # implementation of stacks is pretty straight forward 
 class Stack:
@@ -44,6 +67,11 @@ class Stack:
 
     def size(self):
         return len(self.items)
+    
+    def top(self):
+        if not self.is_empty():
+            return self.items[-1]
+        return None
 
 
 # the heapq class is going to be the same because the heapq allows us to only modify the 
@@ -152,7 +180,7 @@ class Priority_queue:
     
 # a graph is either A directed or undirected
 # and also the style of storing the elements and the nodes in a graph differ from one to another 
-# the class Node has only a proprty of value which can be anything the reason is to easily overload the Node 
+# the class Node has only a proprty of value which can be anything the type is to easily overload the Node 
 # when we need to use it instead of overloading the whole class it seems redundant but better to take precautions
 
     
@@ -265,19 +293,31 @@ class Graph:
         return True
     
     # this would return the parent and vists array
-    def BFS(starting_node):
+    def BFS(self,starting_node,visited_prev={}):
         q = Queue()
-        visited_array = []
+        visited = visited_prev
+        ordered_visits = []
         parents_array = [] 
         q.enqueue(starting_node)
+        visited[starting_node] = True
         while not q.empty():
-             
-        return # for now retruns nothing
+            current_node = q.top()
+            q.dequeue()
+            ordered_visits.append(current_node)
+            for u in self.vertcies[current_node]:
+                if u[0] not in visited:
+                    q.enqueue(u[0])
+                    visited[u[0]] = True
+                    parents_array.append((current_node,u[0]))
+
+        return BFS_response(visited,parents_array,ordered_visits)
 
     
 
 G = Graph()
 G.generate_random_graph(3)
+a = G.BFS('a')
+print(a)
 print(G.vertcies,G.labels)
 
 
