@@ -279,3 +279,7 @@ class Graph:
 G = Graph()
 G.generate_random_graph(3)
 print(G.vertcies,G.labels)
+
+
+
+#fix issue 
