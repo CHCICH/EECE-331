@@ -253,14 +253,21 @@ class Graph:
                     self.vertcies[from_node.name].append((to_node.name,weight))
 
     # setting the labels in other words the tags for each node also known as their names 
-    
+
     def set_labels(self,lables):
         self.labels = lables
 
+
+    # this needs to be modified and correctly set to match with the other one  
     def set_values(self,val_matrix):
         for i in range(len(val_matrix)):
             self.edges[Node(self.labels[i])] = Node(val_matrix[i])
         return True
+    
+    # this would return the parent and vists array
+    def BFS():
+        return # for now retruns nothing
+
     
 
 G = Graph()
