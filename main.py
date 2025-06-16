@@ -265,7 +265,13 @@ class Graph:
         return True
     
     # this would return the parent and vists array
-    def BFS():
+    def BFS(starting_node):
+        q = Queue()
+        visited_array = []
+        parents_array = [] 
+        q.enqueue(starting_node)
+        while not q.empty():
+             
         return # for now retruns nothing
 
     
