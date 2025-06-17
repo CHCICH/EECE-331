@@ -29,6 +29,43 @@ class BFS_response(response):
         result += f"Parent relationships: {self.parents}"
         return result
 
+class DFS_response(response):
+    def __init__(self,time=0, is_pending=None, visited=None, entry_time=None, exit_time=None, stack=None,special_edges=None):
+        super().__init__("DFS_MAP")
+        self.is_pending = is_pending if is_pending is not None else {}
+        self.visited = visited if visited is not None else []
+        self.entry_time = entry_time if entry_time is not None else []
+        self.exit_time = exit_time if exit_time is not None else []
+        self.stack = stack if stack is not None else []
+        self.time = time
+        self.special_edges = special_edges if special_edges is not None else []
+    
+    def __str__(self):
+        result = f"DFS Response: DFS_MAP\n"
+        result += f"Pending nodes: {self.is_pending}\n"
+        result += f"Visited nodes: {self.visited}\n"
+        result += f"Entry times: {self.entry_time}\n"
+        result += f"Exit times: {self.exit_time}\n"
+        result += f"Stack: {self.stack}\n"
+        result += f"Time: {self.time}\n"
+        result += f"special_edges: {self.special_edges}"
+
+        return result
+    
+class Edges_type(response):
+    def __init__(self,edge_type,edges):
+        super().__init__("EDGES_OBJECT")
+        self.edge_type = edge_type if edge_type is not None else {}
+        u,v = edges
+        self.parent = u
+        self.child = v
+    
+    def __str__(self):
+        result = f"BFS Response: EDGES_OBJECT \n"
+        result += f"edge {self.parent} -> {self.child} is type: {self.parents} "
+        return result
+
+
 class Queue(queue.Queue):
     def enqueue(self, item):
         self.put(item)
@@ -72,6 +109,8 @@ class Stack:
         if not self.is_empty():
             return self.items[-1]
         return None
+    def __str__(self):
+        return f"{self.items}"
 
 
 # the heapq class is going to be the same because the heapq allows us to only modify the 
@@ -252,8 +291,9 @@ class edges:
     
 
 class Graph:
-    def __init__(self,n=10,min_weight=0, max_weight=10):
+    def __init__(self,n=10,min_weight=0, max_weight=10,directed=True):
         self.edges = {}
+        self.directed = directed
         self.labels = [str(i) for i in range(n)]
         self.min_weight = min_weight
         self.max_weight = max_weight
@@ -311,12 +351,67 @@ class Graph:
                     parents_array.append((current_node,u[0]))
 
         return BFS_response(visited,parents_array,ordered_visits)
-
     
+    def detect_edges_at_node(self, edge, entry_time, exit_time):
+        u, v = edge
+        print(f"{u} =>{v}")
+        # Only proceed if entry and exit times for both nodes are available.
+        if u not in entry_time or v not in entry_time or u not in exit_time or v not in exit_time:
+            return None
+        # Check if the edge is a tree/forward edge.
+        if entry_time[u] < entry_time[v] and exit_time[u] > exit_time[v]:
+            return Edges_type("forward edge",u,v)
+        # Check if the edge is a back edge.
+        elif entry_time[u] > entry_time[v] and exit_time[u] < exit_time[v]:
+            return Edges_type("back edge",u,v)
+        # Otherwise, consider it as a cross edge.
+        else:
+            return Edges_type("cross edge",u,v)
+
+
+    def DFS(self,starting_node="",visted_prev={}):
+        is_pending = {}
+        visited = visted_prev
+        entry_time = {}
+        exit_time = {}
+        time = 0
+        stack = Stack()
+        special_edges = []
+        def DFSearch(self, u, time, is_pending, visited, entry_time, exit_time, stack,special_edges):
+            time += 1
+            entry_time[u] = time
+            is_pending[u] = True
+            for (v,w) in self.vertcies[u]:
+                if v not in is_pending:
+                    T = self.detect_edges_at_node([u, v],entry_time,exit_time)
+                    if T != None:
+                        special_edges.append(T)
+                    time, is_pending, visited, entry_time, exit_time, stack,special_edges = DFSearch(G, v, time, is_pending, visited, entry_time, exit_time, stack,special_edges)
+                elif not v not in visited and self.directed:
+                    T = self.detect_edges_at_node([u, v],entry_time,exit_time)
+                    if T != None:
+                        special_edges.append(T)
+                else:
+                    T = self.detect_edges_at_node([u, v],entry_time,exit_time)
+                    if T != None:
+                        special_edges.append(T)
+            time += 1
+            exit_time[u] = time
+            visited[u] = True
+            stack.push(u)
+            return [time, is_pending, visited, entry_time, exit_time, stack,special_edges]
+        if(starting_node == ""):
+            for u in self.vertcies.keys():
+                if u not in visited:
+                    time, is_pending, visited, entry_time, exit_time, stack,special_edges = DFSearch(self, u, time, is_pending, visited, entry_time, exit_time, stack,special_edges)
+        else:
+            time, is_pending, visited, entry_time, exit_time, stack,special_edges = DFSearch(G, starting_node, time, is_pending, visited, entry_time, exit_time, stack,special_edges)
+
+        return DFS_response(time, is_pending, visited, entry_time, exit_time, stack,special_edges)
 
 G = Graph()
 G.generate_random_graph(3)
-a = G.BFS('a')
+a = G.DFS('a')
 print(a)
 print(G.vertcies,G.labels)
 
