@@ -399,7 +399,7 @@ class Graph:
             is_pending[u] = True
             for (v,w) in self.vertcies[u]:
                 if v not in is_pending:
-                    time, is_pending, visited, entry_time, exit_time, stack = DFSearch(G, v, time, is_pending, visited, entry_time, exit_time, stack)
+                    time, is_pending, visited, entry_time, exit_time, stack = DFSearch(self, v, time, is_pending, visited, entry_time, exit_time, stack)
             time += 1
             exit_time[u] = time
             visited[u] = True
@@ -410,6 +410,6 @@ class Graph:
                 if u not in visited:
                     time, is_pending, visited, entry_time, exit_time, stack = DFSearch(self, u, time, is_pending, visited, entry_time, exit_time, stack)
         else:
-            time, is_pending, visited, entry_time, exit_time, stack = DFSearch(G, starting_node, time, is_pending, visited, entry_time, exit_time, stack)
+            time, is_pending, visited, entry_time, exit_time, stack = DFSearch(self, starting_node, time, is_pending, visited, entry_time, exit_time, stack)
 
         return DFS_response(time, is_pending, visited, entry_time, exit_time, stack)
