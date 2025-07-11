@@ -30,7 +30,7 @@ class BFS_response(response):
         return result
 
 class DFS_response(response):
-    def __init__(self,time=0, is_pending=None, visited=None, entry_time=None, exit_time=None, stack=None,special_edges=None):
+    def __init__(self,time=0, is_pending=None, visited=None, entry_time=None, exit_time=None, stack=None):
         super().__init__("DFS_MAP")
         self.is_pending = is_pending if is_pending is not None else {}
         self.visited = visited if visited is not None else []
@@ -38,7 +38,6 @@ class DFS_response(response):
         self.exit_time = exit_time if exit_time is not None else []
         self.stack = stack if stack is not None else []
         self.time = time
-        self.special_edges = special_edges if special_edges is not None else []
     
     def __str__(self):
         result = f"DFS Response: DFS_MAP\n"
@@ -48,21 +47,21 @@ class DFS_response(response):
         result += f"Exit times: {self.exit_time}\n"
         result += f"Stack: {self.stack}\n"
         result += f"Time: {self.time}\n"
-        result += f"special_edges: {self.special_edges}"
 
         return result
     
 class Edges_type(response):
-    def __init__(self,edge_type,edges):
+    def __init__(self,edge_type,edges, weight):
         super().__init__("EDGES_OBJECT")
         self.edge_type = edge_type if edge_type is not None else {}
         u,v = edges
         self.parent = u
         self.child = v
-    
+        self.weight = weight
+
     def __str__(self):
-        result = f"BFS Response: EDGES_OBJECT \n"
-        result += f"edge {self.parent} -> {self.child} is type: {self.parents} "
+        result = ""
+        result += f"edge w = { self.weight}, {self.parent} -> {self.child} is type: {self.edge_type} "
         return result
 
 
@@ -225,7 +224,7 @@ class Priority_queue:
     
 
 class Node:
-    def __init__(self, name="a",val=0):
+    def __init__(self, val="a",name=0):
         self.val = val
         self.name = name
 
@@ -266,23 +265,57 @@ class LLNode(Node):
 # graph class
 
 class LinkedList:
-    def __init__(self):
-        self.head = None
+    def __init__(self,head):
+        assert isinstance(head, LLNode), "head must be an LLNode"
+        self.head = head
         self.tail = None
-    def insertAtHead(self,elem):
-        if self.head == None:
-            self.head = LLNode(elem)
-            self.tail = LLNode(elem)
-        else:       
-            new_node = LLNode(elem)
-            new_node.next = self.head
-            self.head = new_node
-    def insertAfterNode(self,name):
-        current = self.head
-        while(current != None):
-            if current.name == name:
 
-                current = current.next
+    def insertAtHead(self, elem):
+        new_node = LLNode(val=elem, next=self.head, name=str(elem))
+        self.head = new_node
+        if self.tail is None:
+            self.tail = new_node
+
+    def insertAtTail(self, elem):
+        new_node = LLNode(val=elem, next=None, name=str(elem))
+        if self.head is None:
+            self.head = new_node
+            self.tail = new_node
+        else:
+            self.tail.next = new_node
+            self.tail = new_node
+
+    def search(self, target):
+        current = self.head
+        while current:
+            if current.val == target:
+                return current
+            current = current.next
+        return None
+
+    def delete(self, target):
+        current = self.head
+        prev = None
+        while current:
+            if current.val == target:
+                if prev:
+                    prev.next = current.next
+                else:
+                    self.head = current.next
+                if current == self.tail:
+                    self.tail = prev
+                return True
+            prev = current
+            current = current.next
+        return False
+
+    def __str__(self):
+        curr = self.head
+        final = ""
+        while curr:
+            final += str(curr.val) + "->"
+            curr = curr.next
+        return final
 
 class edges:
     def __init__(self,node,weight=0):
@@ -351,22 +384,6 @@ class Graph:
                     parents_array.append((current_node,u[0]))
 
         return BFS_response(visited,parents_array,ordered_visits)
-    
-    def detect_edges_at_node(self, edge, entry_time, exit_time):
-        u, v = edge
-        print(f"{u} =>{v}")
-        # Only proceed if entry and exit times for both nodes are available.
-        if u not in entry_time or v not in entry_time or u not in exit_time or v not in exit_time:
-            return None
-        # Check if the edge is a tree/forward edge.
-        if entry_time[u] < entry_time[v] and exit_time[u] > exit_time[v]:
-            return Edges_type("forward edge",u,v)
-        # Check if the edge is a back edge.
-        elif entry_time[u] > entry_time[v] and exit_time[u] < exit_time[v]:
-            return Edges_type("back edge",u,v)
-        # Otherwise, consider it as a cross edge.
-        else:
-            return Edges_type("cross edge",u,v)
 
 
     def DFS(self,starting_node="",visted_prev={}):
@@ -376,45 +393,23 @@ class Graph:
         exit_time = {}
         time = 0
         stack = Stack()
-        special_edges = []
-        def DFSearch(self, u, time, is_pending, visited, entry_time, exit_time, stack,special_edges):
+        def DFSearch(self, u, time, is_pending, visited, entry_time, exit_time, stack):
             time += 1
             entry_time[u] = time
             is_pending[u] = True
             for (v,w) in self.vertcies[u]:
                 if v not in is_pending:
-                    T = self.detect_edges_at_node([u, v],entry_time,exit_time)
-                    if T != None:
-                        special_edges.append(T)
-                    time, is_pending, visited, entry_time, exit_time, stack,special_edges = DFSearch(G, v, time, is_pending, visited, entry_time, exit_time, stack,special_edges)
-                elif not v not in visited and self.directed:
-                    T = self.detect_edges_at_node([u, v],entry_time,exit_time)
-                    if T != None:
-                        special_edges.append(T)
-                else:
-                    T = self.detect_edges_at_node([u, v],entry_time,exit_time)
-                    if T != None:
-                        special_edges.append(T)
+                    time, is_pending, visited, entry_time, exit_time, stack = DFSearch(G, v, time, is_pending, visited, entry_time, exit_time, stack)
             time += 1
             exit_time[u] = time
             visited[u] = True
             stack.push(u)
-            return [time, is_pending, visited, entry_time, exit_time, stack,special_edges]
+            return [time, is_pending, visited, entry_time, exit_time, stack]
         if(starting_node == ""):
             for u in self.vertcies.keys():
                 if u not in visited:
-                    time, is_pending, visited, entry_time, exit_time, stack,special_edges = DFSearch(self, u, time, is_pending, visited, entry_time, exit_time, stack,special_edges)
+                    time, is_pending, visited, entry_time, exit_time, stack = DFSearch(self, u, time, is_pending, visited, entry_time, exit_time, stack)
         else:
-            time, is_pending, visited, entry_time, exit_time, stack,special_edges = DFSearch(G, starting_node, time, is_pending, visited, entry_time, exit_time, stack,special_edges)
+            time, is_pending, visited, entry_time, exit_time, stack = DFSearch(G, starting_node, time, is_pending, visited, entry_time, exit_time, stack)
 
-        return DFS_response(time, is_pending, visited, entry_time, exit_time, stack,special_edges)
-
-G = Graph()
-G.generate_random_graph(3)
-a = G.DFS('a')
-print(a)
-print(G.vertcies,G.labels)
-
-
-
-#fix issue 
+        return DFS_response(time, is_pending, visited, entry_time, exit_time, stack)
