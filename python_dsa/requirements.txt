@@ -1,1 +1,5 @@
-#No dependencies 
+# No external dependencies required
+# GSL-331 uses only Python standard library modules:
+# - queue (for Queue base class)
+# - heapq (for Priority_queue implementation)
+# - random (for Graph random generation)
